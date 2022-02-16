@@ -1,6 +1,6 @@
 import { Links, LinksFunction, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from 'remix'
 import type { MetaFunction } from 'remix'
-import styles from './styles/app.css'
+import styles from './styles/tailwind.css'
 
 export const links: LinksFunction = () => {
 	return [
