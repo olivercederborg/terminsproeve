@@ -5,7 +5,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 	const session = await getSession(request.headers.get('Cookie'))
 
 	if (session.has('access_token') && session.has('keep_logged_in')) {
-		return redirect('/aktiviteter')
+		return redirect('/activities')
 	}
 
 	const data = { error: session.get('error') }
@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
 				},
 			})
 		}
-		return redirect('/aktiviteter')
+		return redirect('/activities')
 	} catch (error: unknown) {
 		return redirect('/login', 400)
 	}
