@@ -65,7 +65,7 @@ const Document = ({ children }: { children: ReactNode }) => (
 			<Meta />
 			<Links />
 		</head>
-		<body className='font-standard'>
+		<body className='font-standard bg-dark-purple'>
 			{children}
 			<ScrollRestoration />
 			<Scripts />
