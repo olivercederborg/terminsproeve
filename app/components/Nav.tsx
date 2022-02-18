@@ -16,7 +16,7 @@ const Nav = () => {
 					</Link>
 				</li>
 				<li className='rounded-full border border-black p-1.5'>
-					<Link to='calendar'>
+					<Link to='/calendar'>
 						<BiCalendarAlt size={24} />
 					</Link>
 				</li>
