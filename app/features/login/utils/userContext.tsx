@@ -1,4 +1,4 @@
-import { ContextType, createContext, FC, useContext, useMemo, useState } from 'react'
+import { ContextType, createContext, FC, useContext, useEffect, useMemo, useState } from 'react'
 
 export type User = {
 	id: number
@@ -22,6 +22,9 @@ export const UserContext = createContext<{
 })
 export const UserProvider: FC<{ currentUser?: User }> = ({ currentUser, children }) => {
 	const [user, setUser] = useState<User>(currentUser || null)
+	useEffect(() => {
+		setUser(currentUser || null)
+	}, [currentUser])
 
 	const value = useMemo(() => ({ user, setUser }), [user, setUser])
 	return <UserContext.Provider value={value}>{children}</UserContext.Provider>

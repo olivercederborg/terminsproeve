@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import {
 	json,
 	Links,
@@ -13,7 +13,7 @@ import {
 	useLoaderData,
 } from 'remix'
 import { getSession } from '~/features/login/utils/sessions.server'
-import { UserProvider } from '~/features/login/utils/userContext'
+import { UserProvider, type User } from '~/features/login/utils/userContext'
 import styles from './styles/tailwind.css'
 
 export const links: LinksFunction = () => {
@@ -39,22 +39,27 @@ export const meta: MetaFunction = () => {
 	return { title: 'New Remix App' }
 }
 
+type LoaderData = {
+	user: User
+}
+
 export const loader: LoaderFunction = async ({ request }) => {
 	const session = await getSession(request.headers.get('Cookie'))
 	const authToken = session.get('access_token')
 	const userId = session.get('user_id')
 
-	if (session.has('access_token')) {
-		const user = await fetch(`http://localhost:4000/api/v1/users/${userId}`, {
-			method: 'GET',
-			headers: {
-				Authorization: `Bearer ${authToken}`,
-			},
-		})
-
-		return json({ user: await user.json() })
+	if (!session.has('access_token')) {
+		return json({ user: null })
 	}
-	return json({ user: null })
+
+	const user = await fetch(`http://localhost:4000/api/v1/users/${userId}`, {
+		method: 'GET',
+		headers: {
+			Authorization: `Bearer ${authToken}`,
+		},
+	})
+
+	return json({ user: await user.json() })
 }
 
 const Document = ({ children }: { children: ReactNode }) => (
@@ -65,7 +70,7 @@ const Document = ({ children }: { children: ReactNode }) => (
 			<Meta />
 			<Links />
 		</head>
-		<body className='font-standard'>
+		<body className='font-standard bg-dark-purple'>
 			{children}
 			<ScrollRestoration />
 			<Scripts />
@@ -75,7 +80,8 @@ const Document = ({ children }: { children: ReactNode }) => (
 )
 
 const App = () => {
-	const user = useLoaderData()
+	const { user } = useLoaderData<LoaderData>()
+
 	return (
 		<UserProvider currentUser={user}>
 			<Document>
