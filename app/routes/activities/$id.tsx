@@ -27,7 +27,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export const action: ActionFunction = async ({ request, params }) => {
 	const form = await request.formData()
-	console.log(form)
 	const button = form.get('button')
 	const session = await getSession(request.headers.get('Cookie'))
 	const authToken = session.get('access_token')
