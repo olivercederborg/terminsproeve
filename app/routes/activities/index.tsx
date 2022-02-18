@@ -18,7 +18,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 const Activities = () => {
 	const { activities } = useLoaderData<LoaderData>()
-	console.log(activities)
 	return (
 		<Fragment>
 			<Nav />
