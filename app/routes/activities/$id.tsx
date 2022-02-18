@@ -76,6 +76,7 @@ const ActivityDetails = () => {
 	)
 	const isSameWeekDay = activity.weekday === getDayName('da-DK')
 	const isWithinAge = user && user?.age >= activity.minAge && user?.age <= activity.maxAge
+	const isInstructor = user?.role === 'instructor'
 	return (
 		<Fragment>
 			<Nav />
@@ -84,7 +85,7 @@ const ActivityDetails = () => {
 					className='w-full flex flex-col justify-end items-end px-7 py-6 bg-cover aspect-[89/86] bg-center bg-no-repeat'
 					style={{ backgroundImage: `url(${activity.asset.url})` }}
 				>
-					{user && !isSameWeekDay && isWithinAge && (
+					{user && !isSameWeekDay && isWithinAge && !isInstructor && (
 						<Form method='post'>
 							{isSignedUp ? (
 								<button
