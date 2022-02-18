@@ -1,5 +1,18 @@
-import { ActionFunction, Form, json, LoaderFunction, redirect } from 'remix'
+import { ActionFunction, Form, json, LoaderFunction, redirect, useActionData } from 'remix'
 import { commitSession, getSession } from '~/features/login/utils/sessions.server'
+import { withZod } from '@remix-validated-form/with-zod'
+import { ValidatedForm, validationError } from 'remix-validated-form'
+import { z } from 'zod'
+import { Input } from '~/features/login/components/Input'
+import { SubmitButton } from '~/features/login/components/SubmitButton'
+
+export const validator = withZod(
+	z.object({
+		username: z.string().nonempty('Bruger navn skal udfyldes'),
+		password: z.string().nonempty('Adgangskode skal udfyldes'),
+		keeploggedin: z.enum(['on']).nullable().optional(),
+	})
+)
 
 export const loader: LoaderFunction = async ({ request }) => {
 	const session = await getSession(request.headers.get('Cookie'))
@@ -18,7 +31,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-	const form = await request.formData()
+	const data = await validator.validate(await request.formData())
+	if (data.error) return validationError(data.error)
+	const { username, password, keeploggedin } = data.data
 	try {
 		const token = await fetch('http://localhost:4000/auth/token', {
 			method: 'POST',
@@ -26,15 +41,15 @@ export const action: ActionFunction = async ({ request }) => {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
-				username: form.get('username'),
-				password: form.get('password'),
+				username,
+				password,
 			}),
 		})
 
 		const { token: authToken, userId } = await token.json()
 
 		if (token.ok) {
-			const shouldKeepLoggedIn = form.get('keep-logged-in') === 'on'
+			const shouldKeepLoggedIn = keeploggedin === 'on'
 			const session = await getSession(request.headers.get('Cookie'))
 			session.set('access_token', authToken)
 			session.set('user_id', userId)
@@ -48,43 +63,48 @@ export const action: ActionFunction = async ({ request }) => {
 		}
 		return redirect('/activities')
 	} catch (error: unknown) {
-		return redirect('/login', 400)
+		return json({ error: 'Forkert login, prøv igen.' })
 	}
 }
 
-const Login = () => (
-	<main className='bg-welcome-image h-screen bg-cover bg-no-repeat bg-center relative overflow-hidden flex flex-col justify-center'>
-		<div className='absolute bg-dark-purple/50 h-[479px] w-[1000px] my-auto -rotate-[30deg] inset-y-0 -translate-x-[33%]' />
-		<section className='z-10'>
-			<h1 className='text-5xl ml-12 mr-8 text-light-gray'>Log ind</h1>
-			<Form method='post' className='flex flex-col'>
-				<input
-					type='text'
-					placeholder='brugernavn'
-					name='username'
-					className='mt-2.5 py-3.5 px-6 ml-12 mr-8'
-				/>
-				<input
-					type='password'
-					placeholder='adgangskode'
-					name='password'
-					className='mt-3.5 py-3.5 px-6 ml-12 mr-8'
-				/>
-				<fieldset className='mt-3.5 py-3.5 px-6 ml-12 mr-8 flex justify-between'>
-					<label htmlFor='keep-logged-in' className='text-white'>
-						Husk mig
-					</label>
-					<input type='checkbox' name='keep-logged-in' id='keep-logged-in' />
-				</fieldset>
-				<button
-					type='submit'
-					className='py-4 bg-dark-purple px-20 mx-auto rounded-[10px] mt-[30px] text-white shadow-[3px_4px_4px_0_rgba(0,0,0,0.25)]'
-				>
-					Log ind
-				</button>
-			</Form>
-		</section>
-	</main>
-)
+const Login = () => {
+	const data = useActionData()
+	return (
+		<main className='bg-welcome-image h-screen bg-cover bg-no-repeat bg-center relative overflow-hidden flex flex-col justify-center'>
+			<div className='absolute bg-dark-purple/50 h-[479px] w-[1000px] my-auto -rotate-[30deg] inset-y-0 -translate-x-[33%]' />
+			<section className='z-10'>
+				<h1 className='text-5xl ml-12 mr-8 text-light-gray'>Log ind</h1>
+				<ValidatedForm validator={validator} method='post' className='flex flex-col'>
+					<fieldset className='ml-12 mr-8'>
+						<Input
+							type='text'
+							placeholder='brugernavn'
+							name='username'
+							className='px-6 py-3.5 mt-2.5 bg-light-gray'
+						/>
+						<Input
+							type='password'
+							placeholder='adgangskode'
+							name='password'
+							className='mt-3.5 py-3.5 px-6 bg-light-gray'
+						/>
+					</fieldset>
+					<fieldset className='mt-3.5 ml-12 mr-8 flex justify-between'>
+						<label htmlFor='keeploggedin' className='text-white'>
+							Husk mig
+						</label>
+						<input type='checkbox' name='keeploggedin' id='keeploggedin' />
+					</fieldset>
+					<SubmitButton />
+					{data?.error && (
+						<p className='mx-auto mt-4 text-red-500 bg-light-gray p-2 border-red-500 border text-sm'>
+							{data.error}
+						</p>
+					)}
+				</ValidatedForm>
+			</section>
+		</main>
+	)
+}
 
 export default Login
