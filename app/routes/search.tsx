@@ -39,7 +39,6 @@ export const action: ActionFunction = async ({ request }) => {
 				activity.name.toLowerCase().includes(query?.toString().toLowerCase())
 		  )
 		: null
-	console.log(searchActivities)
 
 	return json({
 		searchActivities,
@@ -50,12 +49,9 @@ const Search = () => {
 	const { activities } = useLoaderData<LoaderData>()
 	const data = useActionData<ActionData>()
 	const submit = useSubmit()
-	console.log(data)
 
 	const onSearch = (event: ChangeEvent<HTMLFormElement>) =>
 		submit(event.currentTarget, { replace: true })
-
-	const handleSearch = useMemo(() => debounce(onSearch, 500), [])
 
 	return (
 		<Fragment>
