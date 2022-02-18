@@ -40,7 +40,7 @@ export const action: ActionFunction = async ({ request }) => {
 			session.set('user_id', userId)
 			shouldKeepLoggedIn && session.set('keep_logged_in', true)
 
-			return redirect('/', {
+			return redirect('/activities', {
 				headers: {
 					'Set-Cookie': await commitSession(session),
 				},
