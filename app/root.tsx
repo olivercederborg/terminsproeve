@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import {
 	json,
 	Links,
@@ -13,7 +13,7 @@ import {
 	useLoaderData,
 } from 'remix'
 import { getSession } from '~/features/login/utils/sessions.server'
-import { UserProvider } from '~/features/login/utils/userContext'
+import { UserProvider, type User } from '~/features/login/utils/userContext'
 import styles from './styles/tailwind.css'
 
 export const links: LinksFunction = () => {
@@ -37,6 +37,10 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction = () => {
 	return { title: 'New Remix App' }
+}
+
+type LoaderData = {
+	user: User
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -75,7 +79,8 @@ const Document = ({ children }: { children: ReactNode }) => (
 )
 
 const App = () => {
-	const user = useLoaderData()
+	const { user } = useLoaderData<LoaderData>()
+
 	return (
 		<UserProvider currentUser={user}>
 			<Document>
