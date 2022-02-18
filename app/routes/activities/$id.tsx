@@ -9,6 +9,7 @@ import {
 } from 'remix'
 import Nav from '~/components/Nav'
 import type { Activity } from '~/features/activities/types'
+import { getDayName } from '~/features/activities/utils/getDayName'
 import { getSession } from '~/features/login/utils/sessions.server'
 import { useUser } from '~/features/login/utils/userContext'
 
@@ -73,6 +74,8 @@ const ActivityDetails = () => {
 		() => activity.users.some(attendee => attendee.id == user?.id),
 		[user, activity]
 	)
+	const isSameWeekDay = activity.weekday === getDayName('da-DK')
+	const isWithinAge = user && user?.age >= activity.minAge && user?.age <= activity.maxAge
 	return (
 		<Fragment>
 			<Nav />
@@ -81,7 +84,7 @@ const ActivityDetails = () => {
 					className='w-full flex flex-col justify-end items-end px-7 py-6 bg-cover aspect-[89/86] bg-center bg-no-repeat'
 					style={{ backgroundImage: `url(${activity.asset.url})` }}
 				>
-					{user && (
+					{user && !isSameWeekDay && isWithinAge && (
 						<Form method='post'>
 							{isSignedUp ? (
 								<button
@@ -112,6 +115,9 @@ const ActivityDetails = () => {
 						{activity.minAge}-{activity.maxAge} år
 					</h2>
 
+					<p>
+						{activity.weekday} {activity.time}
+					</p>
 					<p className='mt-2.5'>{activity.description}</p>
 				</article>
 			</main>
