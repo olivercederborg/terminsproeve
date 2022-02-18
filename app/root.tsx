@@ -48,17 +48,18 @@ export const loader: LoaderFunction = async ({ request }) => {
 	const authToken = session.get('access_token')
 	const userId = session.get('user_id')
 
-	if (session.has('access_token')) {
-		const user = await fetch(`http://localhost:4000/api/v1/users/${userId}`, {
-			method: 'GET',
-			headers: {
-				Authorization: `Bearer ${authToken}`,
-			},
-		})
-
-		return json({ user: await user.json() })
+	if (!session.has('access_token')) {
+		return json({ user: null })
 	}
-	return json({ user: null })
+
+	const user = await fetch(`http://localhost:4000/api/v1/users/${userId}`, {
+		method: 'GET',
+		headers: {
+			Authorization: `Bearer ${authToken}`,
+		},
+	})
+
+	return json({ user: await user.json() })
 }
 
 const Document = ({ children }: { children: ReactNode }) => (
